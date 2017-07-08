@@ -5,18 +5,18 @@
  /*           See http://www.link.cs.cmu.edu/music-analysis                 */
  /*        for information about commercial use of this system              */
  /*                                                                         */
- /***************************************************************************/ 
+ /***************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include "harmony.h"
 
 /* My version of malloc that keeps track of the number of calls, and
    prints a nice message when it runs out of space.
-*/   
+*/
 
 int max_allocs_in_use = 0;
 int allocs_in_use = 0;
@@ -39,12 +39,12 @@ void * xalloc(int size) {
 
 void xfree(void * p) {
     allocs_in_use --;
-    free((void *)p); 
+    free((void *)p);
 }
 
 void safe_strcpy(char *u, char * v, int usize) {
 /* Copies as much of v into u as it can assuming u is of size usize */
-/* guaranteed to terminate u with a '\0'.                           */    
+/* guaranteed to terminate u with a '\0'.                           */
     strncpy(u, v, usize-1);
     u[usize-1] = '\0';
 }
