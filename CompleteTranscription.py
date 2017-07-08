@@ -257,16 +257,18 @@ def complete_transcription(midifile):
             if overlap_note_i + overlap_note_j < OVERLAP_THR:
                 new_note_list[i].offset = new_note_list[j].onset
     note_list = '\n'.join([note.note_list_name for note in new_note_list]).encode()
+
     print('Detect meter')
     polyph_proc = subprocess.Popen(['polyph', '-v', '-1'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     meter_output = polyph_proc.communicate(input=note_list)[0]
     # polyph_proc = subprocess.Popen(['polyph', '-v', '-2'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     # chords_output = polyph_proc.communicate(input=note_list)[0]
     print('Detect beats and quantized notes')
+    # TODO: wait for new version of polyph with -v -4 option
     polyph_proc = subprocess.Popen(['polyph', '-v', '-4'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     quantized_note_events_output = polyph_proc.communicate(input=note_list)[0]
     print('Determine note spelling')
-    harmony_proc = subprocess.Popen(['harmony', '-p', 'harmony_params.txt'], stdin=subprocess.PIPE,
+    harmony_proc = subprocess.Popen(['harmony'], stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
     harmony_output = harmony_proc.communicate(input=quantized_note_events_output)[0]
     print('Estimate key')
@@ -276,11 +278,24 @@ def complete_transcription(midifile):
     ## Create intermediate representation
     midi_score = MidiScore()
 
+    print('note_list')
+    print(note_list)
+    print('quantized_note_events_output')
+    print(quantized_note_events_output)
+    print('meter_output')
+    print(meter_output)
+    print('key_output')
+    print(key_output)
+    print('harmony_output')
+    print(harmony_output)
+
     # Parsing the key
-    midi_score.set_key(key_output.decode().split()[0])
-    print('The key is', midi_score.key)
+    ## BUG: key_output is empty
+    # midi_score.set_key(key_output.decode().split()[0])
+    # print('The key is', midi_score.key)
 
     # Parsing the meter
+
     midi_score.set_meter(meter_output.decode())
     print('The time signature is', midi_score.time_signature)
 
@@ -292,7 +307,7 @@ def complete_transcription(midifile):
 
     # Find note beats
     midi_score.find_notes_beat()
-
+    print('Notes beat is ', midi_score.find_notes_beat())
     ## Create music21 score
     print('Creating score')
     trebleStaff = stream.PartStaff()
@@ -477,7 +492,7 @@ def convert_music21_score_to_lilypond(the_score):
 
 
 def main():
-    midifile = 'minuet.mid'
+    midifile = '/Users/yipc/repos/CompleteTranscription/minuet.mid'
     the_score = complete_transcription(midifile)
 
     lilypond_score = convert_music21_score_to_lilypond(the_score)
