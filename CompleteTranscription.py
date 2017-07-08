@@ -229,9 +229,11 @@ def setup():
 def complete_transcription(midifile):
     setup()
 
+    path2 = '~/repos/CompleteTranscription/modules/melisma2/'
+    path1 = '~/repos/CompleteTranscription/modules/melisma/'
     ## Process MIDI file according to the cognitive model
     print('Convert MIDI into note list')
-    note_list = subprocess.check_output(['mftext', midifile])
+    note_list = subprocess.check_output([path1 + 'mftext-release-07/mftext', midifile])
 
     # fix overlapping notes
     print('Fix overlapping notes')
@@ -258,19 +260,19 @@ def complete_transcription(midifile):
                 new_note_list[i].offset = new_note_list[j].onset
     note_list = '\n'.join([note.note_list_name for note in new_note_list]).encode()
     print('Detect meter')
-    polyph_proc = subprocess.Popen(['polyph', '-v', '-1'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    polyph_proc = subprocess.Popen([path2 + 'polyph', '-v', '-1'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     meter_output = polyph_proc.communicate(input=note_list)[0]
     # polyph_proc = subprocess.Popen(['polyph', '-v', '-2'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     # chords_output = polyph_proc.communicate(input=note_list)[0]
     print('Detect beats and quantized notes')
-    polyph_proc = subprocess.Popen(['polyph', '-v', '-4'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    polyph_proc = subprocess.Popen([path2 + 'polyph', '-v', '-4'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     quantized_note_events_output = polyph_proc.communicate(input=note_list)[0]
     print('Determine note spelling')
-    harmony_proc = subprocess.Popen(['harmony', '-p', 'harmony_params.txt'], stdin=subprocess.PIPE,
+    harmony_proc = subprocess.Popen([path1 + 'harmony/harmony', '-p', 'harmony_params.txt'], stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
     harmony_output = harmony_proc.communicate(input=quantized_note_events_output)[0]
     print('Estimate key')
-    key_proc = subprocess.Popen('key', stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    key_proc = subprocess.Popen(path1 + 'key/key', stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     key_output = key_proc.communicate(input=harmony_output)[0]
 
     ## Create intermediate representation
